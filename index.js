@@ -142,7 +142,8 @@ Emitter.prototype.idEmit = function(){
   var packet = {};
   packet.type = hasBin(args) ? parser.BINARY_EVENT : parser.EVENT;
   packet.data = args;
-  packet.custom_socket_id = args[args.length-1];
+  packet.custom_socket_id = args[args.length-2];
+  packet.custom_room = args[args.length-1]
 
 
   // set namespace to packet
