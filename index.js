@@ -156,6 +156,38 @@ Emitter.prototype.emit = function(){
   return this;
 };
 
+//targeting individual clients based on id instead of room
+Emitter.prototype.idEmit = function(){
+  // packet
+  var args = Array.prototype.slice.call(arguments);
+  var packet = {};
+  packet.type = hasBin(args) ? parser.BINARY_EVENT : parser.EVENT;
+  packet.data = args;
+  packet.custom_socket_id = args[args.length-2];
+  packet.custom_room = args[args.length-1]
+
+
+  // set namespace to packet
+  if (this._flags.nsp) {
+    packet.nsp = this._flags.nsp;
+    delete this._flags.nsp;
+  } else {
+    packet.nsp = '/';
+  }
+
+  // publish
+  this.redis.publish(this.key, msgpack([packet, {
+    rooms: this._rooms,
+    flags: this._flags
+  }]));
+
+  // reset state
+  this._rooms = [];
+  this._flags = {};
+
+  return this;
+};
+
 /**
  * Create a redis client from a
  * `host:port` uri string.
