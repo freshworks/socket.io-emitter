@@ -176,7 +176,7 @@ Emitter.prototype.idEmit = function(){
   }
 
   // publish
-  this.redis.publish(this.key, msgpack([packet, {
+  this.redis.publish(this.key, msgpack.encode([uid, packet, {
     rooms: this._rooms,
     flags: this._flags
   }]));
