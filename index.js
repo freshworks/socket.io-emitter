@@ -158,6 +158,7 @@ Emitter.prototype.emit = function(){
 
 //targeting individual clients based on id instead of room
 Emitter.prototype.idEmit = function(){
+  var self = this;
   // packet
   var args = Array.prototype.slice.call(arguments);
   var packet = {};
@@ -174,12 +175,23 @@ Emitter.prototype.idEmit = function(){
   } else {
     packet.nsp = '/';
   }
-
-  // publish
-  this.redis.publish(this.key, msgpack.encode([uid, packet, {
+  
+  var opts = {
     rooms: this._rooms,
     flags: this._flags
-  }]));
+  };
+  var chn = this.prefix + '#' + packet.nsp + '#';
+  var msg = msgpack.encode([uid, packet, opts]);
+
+  // publish
+  if (opts.rooms && opts.rooms.length) {
+    opts.rooms.forEach(function(room) {
+      var chnRoom = chn + room + '#';
+      self.redis.publish(chnRoom, msg);
+    });
+  } else {
+    this.redis.publish(chn, msg);
+  }
 
   // reset state
   this._rooms = [];
